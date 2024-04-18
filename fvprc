@@ -1,0 +1,3 @@
+FVP_VERSION=${FVP_VERSION:-"11.22.39"}
+FVP_BASE_URL=${FVP_BASE_URL:-"https://artifacts.tools.arm.com/avh"}
+FVP_ARCHIVE=${FVP_ARCHIVE:-"avh-fvp-linux-$(uname -m).tar.gz"}
