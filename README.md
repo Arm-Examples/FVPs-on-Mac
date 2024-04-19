@@ -1,4 +1,4 @@
-# FVPs-on-Mac
+# Running Arm Virtual Hardware FVPs on MacOS
 
 This repository contains scripts that enable Arm Virtual Hardware FVPs to run via Docker on MacOS.
 
