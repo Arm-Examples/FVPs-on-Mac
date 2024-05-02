@@ -1,3 +1,8 @@
-FVP_VERSION=${FVP_VERSION:-"11.22.39"}
-FVP_BASE_URL=${FVP_BASE_URL:-"https://artifacts.tools.arm.com/avh"}
-FVP_ARCHIVE=${FVP_ARCHIVE:-"avh-fvp-linux-$(uname -m).tar.gz"}
+export FVP_VERSION=${FVP_VERSION:-"11.24.24"}
+export FVP_BASE_URL=${FVP_BASE_URL:-"https://artifacts.tools.arm.com/avh"}
+
+if [[ "$(uname -m)" == "arm64" ]]; then
+    export FVP_ARCHIVE=${FVP_ARCHIVE:-"avh-linux-aarch64_11.24_24_Linux64_armv8l.tgz"}
+else
+    export FVP_ARCHIVE=${FVP_ARCHIVE:-"avh-linux-x86_11.24_24_Linux64.tgz "}
+fi
