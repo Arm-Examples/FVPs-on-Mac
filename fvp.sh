@@ -36,9 +36,17 @@ if ! docker image inspect "fvp:${FVP_VERSION}" >/dev/null 2>&1; then
     "${DIRNAME}/build.sh"
 fi
 
+# Define the default mounts
+MOUNTS=("--mount" "type=bind,src=${HOME}/.armlm/,dst=${HOME}/.armlm/")
+
+# Add the FVP_MAC_WORKDIR mount if the variable is set
+if [ -n "$FVP_MAC_WORKDIR" ]; then
+    MOUNTS+=("--mount" "type=bind,src=${FVP_MAC_WORKDIR},dst=${FVP_MAC_WORKDIR}")
+fi
+
 docker run \
   "${PORTS[@]}" \
-  --mount "type=bind,src=${HOME},dst=${HOME}" \
+  "${MOUNTS[@]}" 
   --workdir "$(pwd)" \
   --env "ARMLM_CACHED_LICENSES_LOCATION=${HOME}/.armlm" \
   --env DISPLAY=${DISPLAY_IP}:0 \
