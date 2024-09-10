@@ -136,3 +136,15 @@ The repository contains the following files:
     ┣ 📄 fvp.sh        The wrapper script to launch a model executable inside a Docker container
     ┗ 📄 fvprc         The configuration file to customize default model version and package
 ```
+
+## Mounting additional paths into the FVP
+
+By default, only the `~./armlm` directory on the host is mounted in the container, which allows licenses granted on your host to be used inside the container.
+
+If you want to mount an additional path on the host inside the container, set the `FVP_MAC_WORKDIR` ENV var.
+
+```sh
+# Will cause the fvp.sh wrapper to bind mount `/Users/cool-guy/my-project/` to `/Users/cool-guy/my-project` inside the FVP container
+export FVP_MAC_WORKDIR=/Users/cool-guy/my-project/
+```
+
