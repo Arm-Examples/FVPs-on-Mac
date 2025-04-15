@@ -51,6 +51,32 @@ export PATH=$PATH:$(pwd)/FVPs-on-Mac/bin
 
 Put this to our `~/.zshrc` to make it permanent.
 
+## [XQuartz](https://www.xquartz.org/) setup for FVP GUI (optional)
+
+If you want to use the FVP GUI, you need to follow some additional steps on your host OS.
+
+1.  Install XQuartz
+
+        brew install xquartz
+
+1.  Ensure XQuartz allows connections from network clients
+
+    <img src="docs/xquartz-settings.png" width="500" alt="XQuartz security settings" />
+
+1.  Allow X11 forwarding
+
+        xhost +
+
+1.  Run model and check GUI is showing
+
+        FVP_Corstone_SSE-300_Ethos-U55
+
+    <img src="docs/model-gui.png" width="200" alt="FVP model GUI" />
+
+#### Resources
+
+- [sorny/x11_forwarding_macos_docker.md](https://gist.github.com/sorny/969fe55d85c9b0035b0109a31cbcb088)
+
 ## Run Models
 
 Once the setup has been completed one can run Fast Models as they are installed natively.
