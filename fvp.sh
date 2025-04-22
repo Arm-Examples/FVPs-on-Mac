@@ -21,6 +21,13 @@ if ! docker image inspect "fvp:${FVP_VERSION}" >/dev/null 2>&1; then
     "${DIRNAME}/build.sh"
 fi
 
-docker run "${PORTS[@]}" --mount "type=bind,src=${HOME},dst=${HOME}" -w "$(pwd)" -e "ARMLM_CACHED_LICENSES_LOCATION=${HOME}/.armlm" "fvp:${FVP_VERSION}" "${MODEL}" "${FLAGS[@]}"
+docker run \
+  "${PORTS[@]}" \
+  --mount "type=bind,src=${HOME},dst=${HOME}" \
+  --workdir "$(pwd)" \
+  --env "ARMLM_CACHED_LICENSES_LOCATION=${HOME}/.armlm" \
+  --env DISPLAY=docker.for.mac.host.internal:0 \
+  --volume /tmp/.X11-unix:/tmp/.X11-unix \
+  "fvp:${FVP_VERSION}" "${MODEL}" "${FLAGS[@]}"
 
 exit

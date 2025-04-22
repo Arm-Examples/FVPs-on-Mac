@@ -13,7 +13,7 @@ RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
 RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
     --mount=type=cache,target=/var/lib/apt,sharing=locked \
     add-apt-repository -y ppa:deadsnakes/ppa && \
-    apt-get install -y --no-install-recommends libpython3.9
+    apt-get install -y --no-install-recommends libpython3.9 x11-apps xterm telnet
 
 ARG FVP_VERSION
 ARG FVP_BASE_URL
