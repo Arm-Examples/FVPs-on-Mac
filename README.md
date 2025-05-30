@@ -67,9 +67,15 @@ If you want to use the FVP GUI, you need to follow some additional steps on your
 
         xhost +
 
+    If you need to set up a socat relay to forward X11 display traffic in a Colima + Docker environment, be sure to allow connections from localhost to ensure proper communication with your XQuartz server.
+
+        xhost + 127.0.0.1
+
 1.  Run model and check GUI is showing
 
         FVP_Corstone_SSE-300_Ethos-U55
+
+    If you need to forward display traffic to your Mac, pass your IP address using the `--display-ip` command-line parameter.
 
     <img src="docs/model-gui.png" width="200" alt="FVP model GUI" />
 
