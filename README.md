@@ -137,14 +137,25 @@ The repository contains the following files:
     ┗ 📄 fvprc         The configuration file to customize default model version and package
 ```
 
-## Mounting additional paths into the FVP
+## Customizing mount behavior
 
-By default, only the `~./armlm` directory on the host is mounted in the container, which allows licenses granted on your host to be used inside the container.
+By default, the entire home directory is mounted in the container, which allows access to all files in your home directory and ensures licenses granted on your host are available inside the container.
+
+### Mounting additional paths
 
 If you want to mount an additional path on the host inside the container, set the `FVP_MAC_WORKDIR` ENV var.
 
 ```sh
 # Will cause the fvp.sh wrapper to bind mount `/Users/cool-guy/my-project/` to `/Users/cool-guy/my-project` inside the FVP container
 export FVP_MAC_WORKDIR=/Users/cool-guy/my-project/
+```
+
+### Disabling home directory mounting
+
+For security reasons, you may want to disable mounting the entire home directory. Set `FVP_DISABLE_HOME_MOUNT=true` to mount only the license directory (`~/.armlm`).
+
+```sh
+# Only mount the license directory, not the entire home directory
+export FVP_DISABLE_HOME_MOUNT=true
 ```
 

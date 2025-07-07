@@ -37,7 +37,15 @@ if ! docker image inspect "fvp:${FVP_VERSION}" >/dev/null 2>&1; then
 fi
 
 # Define the default mounts
-MOUNTS=("--mount" "type=bind,src=${HOME}/.armlm/,dst=${HOME}/.armlm/")
+MOUNTS=()
+
+# Mount home directory by default unless explicitly disabled
+if [ "$FVP_DISABLE_HOME_MOUNT" != "true" ]; then
+    MOUNTS+=("--mount" "type=bind,src=${HOME},dst=${HOME}")
+else
+    # If home mounting is disabled, still mount the license directory
+    MOUNTS+=("--mount" "type=bind,src=${HOME}/.armlm/,dst=${HOME}/.armlm/")
+fi
 
 # Add the FVP_MAC_WORKDIR mount if the variable is set
 if [ -n "$FVP_MAC_WORKDIR" ]; then
@@ -46,7 +54,7 @@ fi
 
 docker run \
   "${PORTS[@]}" \
-  "${MOUNTS[@]}" 
+  "${MOUNTS[@]}"
   --workdir "$(pwd)" \
   --env "ARMLM_CACHED_LICENSES_LOCATION=${HOME}/.armlm" \
   --env DISPLAY=${DISPLAY_IP}:0 \
