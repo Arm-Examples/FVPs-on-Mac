@@ -40,7 +40,7 @@ fi
 MOUNTS=()
 
 # Mount home directory by default unless explicitly disabled or custom workdir is set
-if [ "$FVP_DISABLE_HOME_MOUNT" != "true" ] && [ -z "$FVP_MAC_WORKDIR" ]; then
+if [[ "$FVP_DISABLE_HOME_MOUNT" != "true" ]] && [[ -z "$FVP_MAC_WORKDIR" ]]; then
     echo "Warning: FVPs-on-Mac container is mounting entire home directory. For improved performance and security, consider setting FVP_DISABLE_HOME_MOUNT=true or FVP_MAC_WORKDIR to limit mounted directories." >&2
     MOUNTS+=("--mount" "type=bind,src=${HOME},dst=${HOME}")
 else
@@ -51,14 +51,14 @@ fi
 WORKDIR="$(pwd)"
 
 # Handle custom workdir if specified
-if [ -n "$FVP_MAC_WORKDIR" ]; then
-    if [ ! -d "$FVP_MAC_WORKDIR" ]; then
+if [[ -n "$FVP_MAC_WORKDIR" ]]; then
+    if [[ ! -d "$FVP_MAC_WORKDIR" ]]; then
         echo "Error: FVP_MAC_WORKDIR path '$FVP_MAC_WORKDIR' does not exist or is not a directory" >&2
         exit 1
     fi
     MOUNTS+=("--mount" "type=bind,src=${FVP_MAC_WORKDIR},dst=${FVP_MAC_WORKDIR}")
     WORKDIR="$FVP_MAC_WORKDIR"
-elif [ "$FVP_DISABLE_HOME_MOUNT" == "true" ]; then
+elif [[ "$FVP_DISABLE_HOME_MOUNT" == "true" ]]; then
     WORKDIR="$HOME"
 else
     # Validate current directory is under $HOME when home is mounted
