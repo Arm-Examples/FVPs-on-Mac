@@ -137,25 +137,31 @@ The repository contains the following files:
     ┗ 📄 fvprc         The configuration file to customize default model version and package
 ```
 
-## Customizing mount behavior
+## Customising mount behaviour
 
-By default, the entire home directory is mounted in the container, which allows access to all files in your home directory and ensures licenses granted on your host are available inside the container.
+The script will always mount `~/.armlm/` inside the container in order to have access to licenses granted on your host. 
 
-### Mounting additional paths
+By default, the entire home directory is also mounted in the container, providng read/write access to all files in your home directory.
 
-If you want to mount an additional path on the host inside the container, set the `FVP_MAC_WORKDIR` ENV var.
+### Mounting a specific directory
+
+If you want to mount only a specific directory instead of your entire home directory, set the `FVP_MAC_WORKDIR` ENV var. This improves performance and security by limiting access. 
 
 ```sh
-# Will cause the fvp.sh wrapper to bind mount `/Users/cool-guy/my-project/` to `/Users/cool-guy/my-project` inside the FVP container
-export FVP_MAC_WORKDIR=/Users/cool-guy/my-project/
+# Persistently configure the fvp.sh wrapper to bind mount `/Users/someone/my-project/` instead of the entire home directory
+# Note: The path must exist or the command will fail with an error
+export FVP_MAC_WORKDIR=/Users/someone/my-project/
+# - or -
+# Mount the current working directory for a single command
+FVP_MAC_WORKDIR=$(pwd) FVP_MPS2_Cortex-M3 --version
 ```
 
-### Disabling home directory mounting
+### Disabling all directory mounting
 
-For security reasons, you may want to disable mounting the entire home directory. Set `FVP_DISABLE_HOME_MOUNT=true` to mount only the license directory (`~/.armlm`).
+If you don't need access to any files from your host system, you can disable all directory mounting for maximum security and performance. Set `FVP_DISABLE_HOME_MOUNT=true` to mount only the licence directory (`~/.armlm`).
 
 ```sh
-# Only mount the license directory, not the entire home directory
+# Only mount the licence directory, no other host directories
 export FVP_DISABLE_HOME_MOUNT=true
 ```
 
