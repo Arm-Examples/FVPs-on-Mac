@@ -47,20 +47,38 @@ else
     MOUNTS+=("--mount" "type=bind,src=${HOME}/.armlm/,dst=${HOME}/.armlm/")
 fi
 
-# Add the FVP_MAC_WORKDIR mount if the variable is set
+
+WORKDIR="$(pwd)"
 if [ -n "$FVP_MAC_WORKDIR" ]; then
+    # Add the FVP_MAC_WORKDIR mount if the variable is set
     if [ -d "$FVP_MAC_WORKDIR" ]; then
         MOUNTS+=("--mount" "type=bind,src=${FVP_MAC_WORKDIR},dst=${FVP_MAC_WORKDIR}")
+        WORKDIR="$FVP_MAC_WORKDIR"
     else
         echo "Error: FVP_MAC_WORKDIR path '$FVP_MAC_WORKDIR' does not exist or is not a directory" >&2
         exit 1
+    fi
+else
+    if [ "$FVP_DISABLE_HOME_MOUNT" == "true" ]; then
+        # Only license dir is mounted, so pwd won't work, revert to $HOME
+        WORKDIR="$HOME"
+    else
+        # Check if current directory is under $HOME when home is mounted
+        case "$WORKDIR" in
+            "$HOME"*) ;;  # WORKDIR is under $HOME, continue
+            *) 
+                echo "Error: Current directory '$WORKDIR' is not under home directory '$HOME'" >&2
+                echo "Either change to a directory under $HOME or set FVP_MAC_WORKDIR to specify a different mount" >&2
+                exit 1
+                ;;
+        esac
     fi
 fi
 
 docker run \
   "${PORTS[@]}" \
   "${MOUNTS[@]}" \
-  --workdir "$(pwd)" \
+  --workdir "$WORKDIR" \
   --env "ARMLM_CACHED_LICENSES_LOCATION=${HOME}/.armlm" \
   --env DISPLAY=${DISPLAY_IP}:0 \
   --volume /tmp/.X11-unix:/tmp/.X11-unix \
