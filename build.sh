@@ -23,7 +23,7 @@ if [ ! -d ~/.armlm ]; then
     echo "No Arm license cache found at ~/.armlm"
     echo "Activate Arm user based license."
     echo "The community license can be activates with:"
-    echo "armlm --server https://mdk-preview.keil.arm.com --product KEMDK-COM0"
+    echo "armlm activate --server https://mdk-preview.keil.arm.com --product KEMDK-COM0"
 fi 
 
 pushd "$(dirname "$0")" || exit
