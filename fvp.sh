@@ -49,7 +49,12 @@ fi
 
 # Add the FVP_MAC_WORKDIR mount if the variable is set
 if [ -n "$FVP_MAC_WORKDIR" ]; then
-    MOUNTS+=("--mount" "type=bind,src=${FVP_MAC_WORKDIR},dst=${FVP_MAC_WORKDIR}")
+    if [ -d "$FVP_MAC_WORKDIR" ]; then
+        MOUNTS+=("--mount" "type=bind,src=${FVP_MAC_WORKDIR},dst=${FVP_MAC_WORKDIR}")
+    else
+        echo "Error: FVP_MAC_WORKDIR path '$FVP_MAC_WORKDIR' does not exist or is not a directory" >&2
+        exit 1
+    fi
 fi
 
 docker run \
