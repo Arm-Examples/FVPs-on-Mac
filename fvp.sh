@@ -59,7 +59,7 @@ fi
 
 docker run \
   "${PORTS[@]}" \
-  "${MOUNTS[@]}"
+  "${MOUNTS[@]}" \
   --workdir "$(pwd)" \
   --env "ARMLM_CACHED_LICENSES_LOCATION=${HOME}/.armlm" \
   --env DISPLAY=${DISPLAY_IP}:0 \
