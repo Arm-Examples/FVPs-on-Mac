@@ -97,7 +97,7 @@ Some restrictions still apply:
 
 - By default, only the current working directory is mounted into the Docker container. Hence, all files
     accessed (application images, configuration files) must be stored in the current working directory
-    or its subdirectories, unless you specify a different mount directory using `FVP_MAC_PRIMARY_MOUNT_DIR`.
+    or its subdirectories, unless you specify a different mount directory using `FVP_MOUNT_DIR`.
 
 - Fast Models require an activated User Based License. The license cache stored in `~/.armlm` on the host machine
     is always mapped into the container. Thus, the models running inside of the container reuse the
@@ -145,25 +145,25 @@ By default, the current working directory is mounted in the container, providing
 
 ### Mounting a specific directory
 
-If you want to mount a different directory instead of the current working directory, set the `FVP_MAC_PRIMARY_MOUNT_DIR` environment variable:
+If you want to mount a different directory instead of the current working directory, set the `FVP_MOUNT_DIR` environment variable:
 
 ```sh
 # Mount a specific directory
-export FVP_MAC_PRIMARY_MOUNT_DIR=/Users/someone/my-project/
+export FVP_MOUNT_DIR=/Users/someone/my-project/
 # - or -
 # Mount a specific directory for a single command
-FVP_MAC_PRIMARY_MOUNT_DIR=/Users/someone/my-project/ FVP_MPS2_Cortex-M3 --version
+FVP_MOUNT_DIR=/Users/someone/my-project/ FVP_MPS2_Cortex-M3 --version
 ```
 
 ### Setting the working directory
 
-By default, the working directory inside the container is set to the mounted directory. You can override this with the `FVP_MAC_WORK_DIR` environment variable:
+By default, the working directory inside the container is set to the mounted directory. You can override this with the `FVP_WORKDIR` environment variable:
 
 ```sh
 # Set a different working directory inside the container
-export FVP_MAC_WORK_DIR=/path/to/workdir
+export FVP_WORKDIR=/path/to/workdir
 # - or -
 # Set working directory for a single command
-FVP_MAC_WORK_DIR=/path/to/workdir FVP_MPS2_Cortex-M3 --version
+FVP_WORKDIR=/path/to/workdir FVP_MPS2_Cortex-M3 --version
 ```
 

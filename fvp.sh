@@ -37,34 +37,34 @@ if ! docker image inspect "fvp:${FVP_VERSION}" >/dev/null 2>&1; then
 fi
 
 
-# Set PRIMARY_MOUNT_DIR from environment variable or default to pwd
-PRIMARY_MOUNT_DIR="${FVP_MAC_PRIMARY_MOUNT_DIR:-$(pwd)}"
+# Set mount_dir from environment variable or default to pwd
+mount_dir="${FVP_MOUNT_DIR:-$(pwd)}"
 
-# Validate PRIMARY_MOUNT_DIR exists and is a directory
-if [[ ! -d "$PRIMARY_MOUNT_DIR" ]]; then
-    echo "Error: PRIMARY_MOUNT_DIR '$PRIMARY_MOUNT_DIR' is not a valid directory" >&2
+# Validate mount_dir exists and is a directory
+if [[ ! -d "$mount_dir" ]]; then
+    echo "Error: FVP_MOUNT_DIR '$mount_dir' is not a valid directory" >&2
     exit 1
 fi
 
-# Set WORKDIR from environment variable or default to PRIMARY_MOUNT_DIR
-WORKDIR="${FVP_MAC_WORK_DIR:-$PRIMARY_MOUNT_DIR}"
+# Set workdir from environment variable or default to mount_dir
+workdir="${FVP_WORKDIR:-$mount_dir}"
 
-# Validate WORKDIR exists if it's a subdirectory of PRIMARY_MOUNT_DIR
-if [[ "$WORKDIR" == "$PRIMARY_MOUNT_DIR"* && ! -d "$WORKDIR" ]]; then
-    echo "Error: WORKDIR '$WORKDIR' is not a valid directory" >&2
+# Validate workdir exists if it's a subdirectory of mount_dir
+if [[ "$workdir" == "$mount_dir"* && ! -d "$workdir" ]]; then
+    echo "Error: FVP_WORKDIR '$workdir' is not a valid directory" >&2
     exit 1
 fi
 
 # Mount licenses
 MOUNTS=(
     "--mount" "type=bind,src=${HOME}/.armlm/,dst=${HOME}/.armlm/"
-    "--mount" "type=bind,src=${PRIMARY_MOUNT_DIR}/,dst=${PRIMARY_MOUNT_DIR}/"
+    "--mount" "type=bind,src=${mount_dir}/,dst=${mount_dir}/"
 )
 
 docker run \
   "${PORTS[@]}" \
   "${MOUNTS[@]}" \
-  --workdir "$WORKDIR" \
+  --workdir "$workdir" \
   --env "ARMLM_CACHED_LICENSES_LOCATION=${HOME}/.armlm" \
   --env DISPLAY=${DISPLAY_IP}:0 \
   --volume /tmp/.X11-unix:/tmp/.X11-unix \
