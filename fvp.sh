@@ -56,9 +56,10 @@ if [[ "$WORKDIR" == "$PRIMARY_MOUNT_DIR"* && ! -d "$WORKDIR" ]]; then
 fi
 
 # Mount licenses
-MOUNTS=("--mount" "type=bind,src=${HOME}/.armlm/,dst=${HOME}/.armlm/")
-# Primary mount
-MOUNTS+=("--mount" "type=bind,src=${PRIMARY_MOUNT_DIR}/,dst=${PRIMARY_MOUNT_DIR}/")
+MOUNTS=(
+    "--mount" "type=bind,src=${HOME}/.armlm/,dst=${HOME}/.armlm/"
+    "--mount" "type=bind,src=${PRIMARY_MOUNT_DIR}/,dst=${PRIMARY_MOUNT_DIR}/"
+)
 
 docker run \
   "${PORTS[@]}" \
