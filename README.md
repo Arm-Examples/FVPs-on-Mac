@@ -137,33 +137,19 @@ The repository contains the following files:
     ┗ 📄 fvprc         The configuration file to customize default model version and package
 ```
 
-## Customising mount behaviour
+## Customising Docker Mounts
 
-The script will always mount `~/.armlm/` inside the container in order to have access to licenses granted on your host. 
+FVPs running inside the Docker container need access to your application images and configuration files. The script automatically mounts `~/.armlm/` for license access, and by default mounts your current working directory for project files.
 
-By default, the current working directory is mounted in the container, providing read/write access to files in that directory and its subdirectories.
-
-### Mounting a specific directory
-
-If you want to mount a different directory instead of the current working directory, set the `FVP_MOUNT_DIR` environment variable:
+For projects stored elsewhere, use `FVP_MOUNT_DIR` to specify which directory to mount:
 
 ```sh
-# Mount a specific directory
-export FVP_MOUNT_DIR=/Users/someone/my-project/
-# - or -
-# Mount a specific directory for a single command
 FVP_MOUNT_DIR=/Users/someone/my-project/ FVP_MPS2_Cortex-M3 --version
 ```
 
-### Setting the working directory
-
-By default, the working directory inside the container is set to the mounted directory. You can override this with the `FVP_WORKDIR` environment variable:
+To set the working directory inside the container (independent of what's mounted), use `FVP_WORKDIR`:
 
 ```sh
-# Set a different working directory inside the container
-export FVP_WORKDIR=/path/to/workdir
-# - or -
-# Set working directory for a single command
 FVP_WORKDIR=/path/to/workdir FVP_MPS2_Cortex-M3 --version
 ```
 
