@@ -95,12 +95,12 @@ Once the setup has been completed one can run Fast Models as they are installed 
 
 Some restrictions still apply:
 
-- The users home directory is mapped into the Docker container. Hence, all files
-    accessed (application images, configuration files) must be stored in users home.
+- By default, only the current working directory is mounted into the Docker container. Hence, all files
+    accessed (application images, configuration files) must be stored in the current working directory
+    or its subdirectories, unless you specify a different mount directory using `FVP_MAC_PRIMARY_MOUNT_DIR`.
 
-- Fast Models require an activated User Based License. Typically, the license cache
-    is stored in `~/.armlm` on the host machine and mapped into the container as
-    part of the user home. Thus, the models running inside of the container reuse the
+- Fast Models require an activated User Based License. The license cache stored in `~/.armlm` on the host machine
+    is always mapped into the container. Thus, the models running inside of the container reuse the
     license activated on the host machine.
 
 ## Customization
@@ -141,27 +141,29 @@ The repository contains the following files:
 
 The script will always mount `~/.armlm/` inside the container in order to have access to licenses granted on your host. 
 
-By default, the entire home directory is also mounted in the container, providng read/write access to all files in your home directory.
+By default, the current working directory is mounted in the container, providing read/write access to files in that directory and its subdirectories.
 
 ### Mounting a specific directory
 
-If you want to mount only a specific directory instead of your entire home directory, set the `FVP_MAC_WORKDIR` ENV var. This improves performance and security by limiting access. 
+If you want to mount a different directory instead of the current working directory, set the `FVP_MAC_PRIMARY_MOUNT_DIR` environment variable:
 
 ```sh
-# Persistently configure the fvp.sh wrapper to bind mount `/Users/someone/my-project/` instead of the entire home directory
-# Note: The path must exist or the command will fail with an error
-export FVP_MAC_WORKDIR=/Users/someone/my-project/
+# Mount a specific directory
+export FVP_MAC_PRIMARY_MOUNT_DIR=/Users/someone/my-project/
 # - or -
-# Mount the current working directory for a single command
-FVP_MAC_WORKDIR=$(pwd) FVP_MPS2_Cortex-M3 --version
+# Mount a specific directory for a single command
+FVP_MAC_PRIMARY_MOUNT_DIR=/Users/someone/my-project/ FVP_MPS2_Cortex-M3 --version
 ```
 
-### Disabling all directory mounting
+### Setting the working directory
 
-If you don't need access to any files from your host system, you can disable all directory mounting for maximum security and performance. Set `FVP_DISABLE_HOME_MOUNT=true` to mount only the licence directory (`~/.armlm`).
+By default, the working directory inside the container is set to the mounted directory. You can override this with the `FVP_MAC_WORK_DIR` environment variable:
 
 ```sh
-# Only mount the licence directory, no other host directories
-export FVP_DISABLE_HOME_MOUNT=true
+# Set a different working directory inside the container
+export FVP_MAC_WORK_DIR=/path/to/workdir
+# - or -
+# Set working directory for a single command
+FVP_MAC_WORK_DIR=/path/to/workdir FVP_MPS2_Cortex-M3 --version
 ```
 
