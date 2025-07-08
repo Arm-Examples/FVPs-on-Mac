@@ -39,8 +39,21 @@ fi
 
 # Set PRIMARY_MOUNT_DIR from environment variable or default to pwd
 PRIMARY_MOUNT_DIR="${FVP_MAC_PRIMARY_MOUNT_DIR:-$(pwd)}"
+
+# Validate PRIMARY_MOUNT_DIR exists and is a directory
+if [[ ! -d "$PRIMARY_MOUNT_DIR" ]]; then
+    echo "Error: PRIMARY_MOUNT_DIR '$PRIMARY_MOUNT_DIR' is not a valid directory" >&2
+    exit 1
+fi
+
 # Set WORKDIR from environment variable or default to PRIMARY_MOUNT_DIR
 WORKDIR="${FVP_MAC_WORK_DIR:-$PRIMARY_MOUNT_DIR}"
+
+# Validate WORKDIR exists if it's a subdirectory of PRIMARY_MOUNT_DIR
+if [[ "$WORKDIR" == "$PRIMARY_MOUNT_DIR"* && ! -d "$WORKDIR" ]]; then
+    echo "Error: WORKDIR '$WORKDIR' is not a valid directory" >&2
+    exit 1
+fi
 
 # Mount licenses
 MOUNTS=("--mount" "type=bind,src=${HOME}/.armlm/,dst=${HOME}/.armlm/")
