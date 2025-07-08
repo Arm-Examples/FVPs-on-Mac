@@ -36,42 +36,16 @@ if ! docker image inspect "fvp:${FVP_VERSION}" >/dev/null 2>&1; then
     "${DIRNAME}/build.sh"
 fi
 
-# Define the default mounts
-MOUNTS=()
 
-# Mount home directory by default unless explicitly disabled or custom workdir is set
-if [[ "$FVP_DISABLE_HOME_MOUNT" != "true" ]] && [[ -z "$FVP_MAC_WORKDIR" ]]; then
-    echo "Warning: FVPs-on-Mac container is mounting entire home directory. For improved performance and security, consider setting FVP_DISABLE_HOME_MOUNT=true or FVP_MAC_WORKDIR to limit mounted directories." >&2
-    MOUNTS+=("--mount" "type=bind,src=${HOME},dst=${HOME}")
-else
-    MOUNTS+=("--mount" "type=bind,src=${HOME}/.armlm/,dst=${HOME}/.armlm/")
-fi
+# Set PRIMARY_MOUNT_DIR from environment variable or default to pwd
+PRIMARY_MOUNT_DIR="${FVP_MAC_PRIMARY_MOUNT_DIR:-$(pwd)}"
+# Set WORKDIR from environment variable or default to PRIMARY_MOUNT_DIR
+WORKDIR="${FVP_MAC_WORK_DIR:-$PRIMARY_MOUNT_DIR}"
 
-# Set working directory
-WORKDIR="$(pwd)"
-
-# Handle custom workdir if specified
-if [[ -n "$FVP_MAC_WORKDIR" ]]; then
-    if [[ ! -d "$FVP_MAC_WORKDIR" ]]; then
-        echo "Error: FVP_MAC_WORKDIR path '$FVP_MAC_WORKDIR' does not exist or is not a directory" >&2
-        exit 1
-    fi
-    MOUNTS+=("--mount" "type=bind,src=${FVP_MAC_WORKDIR},dst=${FVP_MAC_WORKDIR}")
-    WORKDIR="$FVP_MAC_WORKDIR"
-elif [[ "$FVP_DISABLE_HOME_MOUNT" == "true" ]]; then
-    WORKDIR="$HOME"
-else
-    # Validate current directory is under $HOME when home is mounted
-    case "$WORKDIR" in
-        "$HOME"*) ;;
-        *) 
-            echo "Error: Current directory '$WORKDIR' is not under home directory '$HOME' and will not be accessible by the FVP." >&2
-            echo "Either change to a directory under $HOME, set FVP_MAC_WORKDIR to specify a different mount," >&2
-            echo "or set FVP_DISABLE_HOME_MOUNT=true to improve security and performance if you don't need home directory access" >&2
-            exit 1
-            ;;
-    esac
-fi
+# Mount licenses
+MOUNTS=("--mount" "type=bind,src=${HOME}/.armlm/,dst=${HOME}/.armlm/")
+# Primary mount
+MOUNTS+=("--mount" "type=bind,src=${PRIMARY_MOUNT_DIR}/,dst=${PRIMARY_MOUNT_DIR}/")
 
 docker run \
   "${PORTS[@]}" \
