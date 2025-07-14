@@ -95,8 +95,8 @@ Once the setup has been completed one can run Fast Models as they are installed 
 
 Some restrictions still apply:
 
-- By default, only the current working directory is mounted into the Docker container. Hence, all files
-    accessed (application images, configuration files) must be stored in the current working directory
+- By default, your home directory is mounted into the Docker container for file access. Hence, all files
+    accessed (application images, configuration files) must be stored in your home directory
     or its subdirectories, unless you specify a different mount directory using `FVP_MOUNT_DIR`.
 
 - Fast Models require an activated User Based License. The license cache stored in `~/.armlm` on the host machine
@@ -139,17 +139,15 @@ The repository contains the following files:
 
 ## Customising Docker Mounts
 
-FVPs running inside the Docker container need access to your application images and configuration files. The script automatically mounts `~/.armlm/` for license access, and by default mounts your current working directory for project files.
+By default, your entire home directory is mounted and the container starts in your current working directory.
 
-For projects stored elsewhere, use `FVP_MOUNT_DIR` to specify which directory to mount:
-
-```sh
-FVP_MOUNT_DIR=/Users/someone/my-project/ FVP_MPS2_Cortex-M3 --version
-```
-
-To set the working directory inside the container (independent of what's mounted), use `FVP_WORKDIR`:
+For better security and performance, use the `FVP_MOUNT_DIR` and `FVP_WORKDIR` ENV vars limit what's mounted:
 
 ```sh
-FVP_WORKDIR=/path/to/workdir FVP_MPS2_Cortex-M3 --version
+# Mount only current directory
+FVP_MOUNT_DIR=$(pwd) FVP_MPS2_Cortex-M3 --version
+
+# Mount project root but work in subdirectory
+FVP_MOUNT_DIR=/path/to/project FVP_WORKDIR=/path/to/project/build FVP_MPS2_Cortex-M3 --version
 ```
 

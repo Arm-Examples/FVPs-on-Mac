@@ -37,8 +37,8 @@ if ! docker image inspect "fvp:${FVP_VERSION}" >/dev/null 2>&1; then
 fi
 
 
-# Set mount_dir from environment variable or default to pwd
-mount_dir="${FVP_MOUNT_DIR:-$(pwd)}"
+# Set mount_dir from environment variable or default to home
+mount_dir="${FVP_MOUNT_DIR:-$HOME}"
 
 # Validate mount_dir exists and is a directory
 if [[ ! -d "$mount_dir" ]]; then
@@ -46,8 +46,8 @@ if [[ ! -d "$mount_dir" ]]; then
     exit 1
 fi
 
-# Set workdir from environment variable or default to mount_dir
-workdir="${FVP_WORKDIR:-$mount_dir}"
+# Set workdir from environment variable or default to pwd
+workdir="${FVP_WORKDIR:-$(pwd)}"
 
 # Validate workdir exists if it's a subdirectory of mount_dir
 if [[ "$workdir" == "$mount_dir"* && ! -d "$workdir" ]]; then
