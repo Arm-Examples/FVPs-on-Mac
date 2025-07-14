@@ -36,10 +36,35 @@ if ! docker image inspect "fvp:${FVP_VERSION}" >/dev/null 2>&1; then
     "${DIRNAME}/build.sh"
 fi
 
+
+# Set mount_dir from environment variable or default to home
+mount_dir="${FVP_MOUNT_DIR:-$HOME}"
+
+# Validate mount_dir exists and is a directory
+if [[ ! -d "$mount_dir" ]]; then
+    echo "Error: FVP_MOUNT_DIR '$mount_dir' is not a valid directory" >&2
+    exit 1
+fi
+
+# Set workdir from environment variable or default to pwd
+workdir="${FVP_WORKDIR:-$(pwd)}"
+
+# Validate workdir exists if it's a subdirectory of mount_dir
+if [[ "$workdir" == "$mount_dir"* && ! -d "$workdir" ]]; then
+    echo "Error: FVP_WORKDIR '$workdir' is not a valid directory" >&2
+    exit 1
+fi
+
+# Mount licenses
+MOUNTS=(
+    "--mount" "type=bind,src=${HOME}/.armlm/,dst=${HOME}/.armlm/"
+    "--mount" "type=bind,src=${mount_dir}/,dst=${mount_dir}/"
+)
+
 docker run \
   "${PORTS[@]}" \
-  --mount "type=bind,src=${HOME},dst=${HOME}" \
-  --workdir "$(pwd)" \
+  "${MOUNTS[@]}" \
+  --workdir "$workdir" \
   --env "ARMLM_CACHED_LICENSES_LOCATION=${HOME}/.armlm" \
   --env DISPLAY=${DISPLAY_IP}:0 \
   --volume /tmp/.X11-unix:/tmp/.X11-unix \
