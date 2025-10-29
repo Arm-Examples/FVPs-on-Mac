@@ -57,9 +57,15 @@ If you want to use the FVP GUI, you need to follow some additional steps on your
 
 1.  Install XQuartz
 
-        brew install xquartz
+    ```sh
+    brew install xquartz
+    ```
+
+    The X11 tools should be installed in `/opt/X11/bin`. Add this directory to your `PATH`.
 
 1.  Ensure XQuartz allows connections from network clients
+
+    Open Xquartz. At the top left of the screen you will find the app's menu bar. Click on **Xquartz - Settings** and go to the **Security** tab: 
 
     <img src="docs/xquartz-settings.png" width="500" alt="XQuartz security settings" />
 
