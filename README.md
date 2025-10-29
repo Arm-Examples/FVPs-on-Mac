@@ -109,6 +109,12 @@ Some restrictions still apply:
     is always mapped into the container. Thus, the models running inside of the container reuse the
     license activated on the host machine.
 
+> [!NOTE]
+> - If you do not wish to use the GUI, disable it with `fvp_mps2.mps2_visualisation.disable-visualisation=1` in the FVP configuration text file.
+> - If you are using a UART and want to redirect to the Terminal, add `fvp_mps2.UART0.out_file=-` to the FVP configuration text file.
+> - If you want to disable the Telnet session, add `fvp_mps2.telnetterminal0.start_telnet=0` to the FVP configuration text file.
+> - Depending on your model, the prefix `fvp_mps2` might be different!
+
 ## Customization
 
 The Fast Model version and package used for creating the Docker image and wrapper scripts
