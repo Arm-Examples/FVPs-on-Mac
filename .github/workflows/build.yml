@@ -54,7 +54,11 @@ jobs:
         uses: step-security/harden-runner@20cf305ff2072d973412fa9b1e3a4f227bda3c76 # v2.14.0
         with:
           egress-policy: audit
-
+          allowed-endpoints: >
+            archive.ubuntu.com:80
+            security.ubuntu.com:80
+            ppa.launchpadcontent.net:443
+            
       - name: Checkout
         uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6.0.1
         with:
@@ -62,9 +66,6 @@ jobs:
 
       - name: Create .armlm
         run: mkdir -p ~/.armlm
-
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@8d2750c68a42422c14e847fe6c8ac0403b4cbd6f # v3.12.0
 
       - name: Build Docker image
         run: ./build.sh
