@@ -66,7 +66,7 @@ docker run \
   "${MOUNTS[@]}" \
   --workdir "$workdir" \
   --env "ARMLM_CACHED_LICENSES_LOCATION=${HOME}/.armlm" \
-  --env DISPLAY=${DISPLAY_IP}:0 \
+  --env "DISPLAY=${DISPLAY_IP}:0" \
   --volume /tmp/.X11-unix:/tmp/.X11-unix \
   "fvp:${FVP_VERSION}" "${MODEL}" "${FLAGS[@]}"
 

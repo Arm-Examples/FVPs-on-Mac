@@ -1,3 +1,5 @@
+
+# hadolint global ignore=DL3008,DL3015
 FROM ubuntu:22.04
 
 ARG DEBIAN_FRONTEND=noninteractive

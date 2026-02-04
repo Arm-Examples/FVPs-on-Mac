@@ -1,0 +1,73 @@
+name: build
+
+on:
+  push:
+    branches:
+      - main
+
+  pull_request:
+    paths:
+      - .github/workflows/build.yml
+      - dockerfile
+      - build.sh
+      - fvp.sh
+      - fvprc
+
+permissions:
+  contents: read
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Harden the runner (Audit all outbound calls)
+        uses: step-security/harden-runner@20cf305ff2072d973412fa9b1e3a4f227bda3c76 # v2.14.0
+        with:
+          egress-policy: audit
+
+      - name: Checkout
+        uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6.0.1
+        with:
+          fetch-depth: 0
+
+      - name: Install Ubuntu deps
+        run: |
+          sudo apt-get update
+          sudo apt-get install \
+            shellcheck
+
+      - uses: ammaraskar/gcc-problem-matcher@0f9c86f9e693db67dacf53986e1674de5f2e5f28 # master
+
+      - name: Run ShellCheck
+        run: |
+          shellcheck -s bash -f gcc *.sh fvprc
+
+      - name: Lint Dockerfile
+        uses: hadolint/hadolint-action@2332a7b74a6de0dda2e2221d575162eba76ba5e5 # v3.3.0
+        with:
+          dockerfile: dockerfile
+
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Harden the runner (Audit all outbound calls)
+        uses: step-security/harden-runner@20cf305ff2072d973412fa9b1e3a4f227bda3c76 # v2.14.0
+        with:
+          egress-policy: audit
+            
+      - name: Checkout
+        uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6.0.1
+        with:
+          fetch-depth: 0
+
+      - name: Create .armlm
+        run: mkdir -p ~/.armlm
+
+      - name: Build Docker image
+        run: ./build.sh
+
+      - name: Run FVP binaries to verify build
+        run: | 
+          for x in ./bin/*; do
+            $x --version || exit 1
+          done
