@@ -1,0 +1,11 @@
+version: 2
+
+updates:
+  # Maintain dependencies for GitHub Actions
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "monthly"
+      time: "02:00"
+    cooldown:
+      default-days: 3
