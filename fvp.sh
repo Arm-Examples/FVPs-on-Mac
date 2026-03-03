@@ -61,7 +61,7 @@ MOUNTS=(
     "--mount" "type=bind,src=${mount_dir}/,dst=${mount_dir}/"
 )
 
-docker run \
+docker run --rm \
   "${PORTS[@]}" \
   "${MOUNTS[@]}" \
   --workdir "$workdir" \
