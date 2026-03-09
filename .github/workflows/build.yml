@@ -69,5 +69,6 @@ jobs:
       - name: Run FVP binaries to verify build
         run: | 
           for x in ./bin/*; do
+            echo "$x --version"
             $x --version || exit 1
           done

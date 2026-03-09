@@ -42,6 +42,6 @@ while IFS= read -r -d '' model; do
     if [ ! -L "bin/${model}" ]; then
         ln -s ../fvp.sh "bin/${model}"
     fi
-done < <(docker run --rm "fvp:${FVP_VERSION}" find /opt/avh-fvp/bin/ -maxdepth 1 -type f -executable -follow -print0)
+done < <(docker run --rm "fvp:${FVP_VERSION}" find /opt/avh-fvp/bin/ -name "FVP_*" -maxdepth 1 -type f -executable -follow -print0)
 
 exit 0
