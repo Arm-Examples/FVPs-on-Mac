@@ -12,6 +12,7 @@ on:
       - build.sh
       - fvp.sh
       - fvprc
+      - FVP_plugins/**
 
 permissions:
   contents: read

@@ -6,7 +6,7 @@ DIRNAME="$(dirname "$(realpath "$0")")"
 source "${DIRNAME}/fvprc"
 
 FLAGS=()
-PORTS=()
+PORTS=("-p" "127.0.0.1:3333:3333")
 DISPLAY_IP="docker.for.mac.host.internal"
 
 while [[ $# -gt 0 ]]; do
