@@ -1,6 +1,6 @@
 
 # hadolint global ignore=DL3008,DL3015
-FROM ubuntu:22.04
+FROM ubuntu:26.04
 
 ARG DEBIAN_FRONTEND=noninteractive
 
@@ -14,8 +14,7 @@ RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
 
 RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
     --mount=type=cache,target=/var/lib/apt,sharing=locked \
-    add-apt-repository -y ppa:deadsnakes/ppa && \
-    apt-get install -y --no-install-recommends libpython3.9 x11-apps xterm telnet
+    apt-get install -y --no-install-recommends libpython3.14 x11-apps xterm telnet
 
 ARG FVP_VERSION
 ARG FVP_BASE_URL
