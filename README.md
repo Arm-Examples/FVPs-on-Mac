@@ -28,6 +28,11 @@ This will create the subdirectory `FVPs-on-Mac` in the current working directory
 
 ## Build the Docker wrapper
 
+This checkout is configured to download and build the official Fast Models
+11.32.23 release from `https://artifacts.tools.arm.com/avh/11.32.23/`.
+The build selects the Linux Arm64 archive on Apple Silicon and the Linux x86
+archive on Intel hosts, then verifies the published SHA-256 checksum.
+
 Run the build script to create the Docker image and populate the `bin` folder with model wrappers:
 
 ```sh
@@ -115,25 +120,135 @@ Some restrictions still apply:
 > - If you want to disable the Telnet session, add `fvp_mps2.telnetterminal0.start_telnet=0` to the FVP configuration text file.
 > - Depending on your model, the prefix `fvp_mps2` might be different!
 
+## CMSIS-Debugger integration
+
+This checkout extends the wrapper to support the CMSIS-Debugger VS Code
+extension through the `GDBServer.so` plugin included in the FVP package.
+
+The resulting connection paths are:
+
+```text
+CMSIS-Debugger     -> 127.0.0.1:<gdb-port>  -> Docker -> GDBServer.so -> FVP target
+CMSIS UART client  -> 127.0.0.1:<uart-port> -> Docker -> telnetterminal<n>
+```
+
+### GDBServer and UART arguments
+
+The FVP must still be told to load `GDBServer.so`. Set `FVP_MODEL`,
+`PLATFORM`, `GDB_PORT`, and `UART_PORT` for the selected model and launch it as
+follows:
+
+```sh
+"${FVP_MODEL}" \
+  --plugin /opt/avh-fvp/plugins/GDBServer.so \
+  -C "GDBServer.port=${GDB_PORT}" \
+  -C GDBServer.allow_remote=1 \
+  -C GDBServer.shutdown_on_disconnect=1 \
+  -C "${PLATFORM}.telnetterminal0.start_port=${UART_PORT}" \
+  -C "${PLATFORM}.telnetterminal0.mode=raw"
+```
+
+Pass every FVP configuration value as its own argument with a preceding `-C`.
+The wrapper detects the `GDBServer.port` and `telnetterminal<n>.start_port`
+value arguments and publishes those ports. If `-C` is omitted, the wrapper can
+still detect and publish the port, but the FVP can interpret the value as an
+application filename and terminate.
+
+The terminal namespace is model-specific. Set `PLATFORM` to the namespace used
+by the selected model, such as `mps3_board` or `mps4_board`. The wrapper
+intentionally accepts any prefix before `telnetterminal<n>.start_port`.
+
+Both added port mappings bind to `127.0.0.1`. GDB and UART are therefore
+available to applications on the Mac but are not exposed through other host
+network interfaces.
+
+### CMSIS-Debugger plugin path
+
+CMSIS-Debugger can start any generated FVP wrapper through a `gdbtarget`
+configuration and pass the plugin path through the macOS
+`AVH_FVP_PLUGINS` environment variable. The following generic launch.json pattern shows
+the relevant settings:
+
+```jsonc
+"target": {
+    "server": "<FVP-wrapper-name>",
+    "serverParameters": [
+        "-D",
+        "--plugin",
+        "${env:AVH_FVP_PLUGINS}/GDBServer.so",
+        "-C",
+        "GDBServer.port=<gdb-port>",
+        "-C",
+        "GDBServer.allow_remote=1",
+        "-C",
+        "GDBServer.shutdown_on_disconnect=1",
+        "-C",
+        "<platform>.telnetterminal0.start_port=<uart-port>",
+        "-C",
+        "<platform>.telnetterminal0.mode=raw",
+        "-a",
+        "<path-to-application-image>"
+    ],
+    "port": "<gdb-port>",
+    "serverStartupDelay": 1000,
+    "uart": {
+        "socketPort": "<uart-port>",
+        "eolCharacter": "CRLF"
+    }
+}
+```
+
+Use the same numeric value for `GDBServer.port`, `target.port`, and the host
+GDB connection. Likewise, use the same value for the FVP terminal
+`start_port` and `uart.socketPort`. Replace `<platform>` with the parameter
+namespace used by the selected model, such as `mps3_board` or `mps4_board`.
+
+VS Code expands `${env:AVH_FVP_PLUGINS}` in the macOS process before the
+Docker wrapper starts. The `ENV AVH_FVP_PLUGINS` instruction in the image does
+not set this macOS variable. To use the plugin bundled with the active FVP
+image, set the host variable to its in-container directory:
+
+```sh
+export AVH_FVP_PLUGINS=/opt/avh-fvp/plugins
+```
+
+Although `/opt/avh-fvp/plugins` is not a macOS directory, the expanded string
+is forwarded as an FVP argument and becomes valid inside the container.
+
+The example launch.json above uses a fixed 1000 ms server startup delay to avoid the GDB connection timeout issue and configures the integrated UART client for raw mode with CRLF line endings. 
+
+### Container cleanup and port reuse
+
+`GDBServer.shutdown_on_disconnect=1` requests graceful plugin shutdown. When VS Code stops or interrupts the server
+process, the wrapper's traps identify and remove the exact container created by
+that invocation. This prevents a stopped debug session from leaving a container
+that still owns the configured GDB or UART port and blocks the next session.
+
+During a live session, inspect the selected image and published ports with:
+
+```sh
+docker ps --format 'container={{.Names}} image={{.Image}} ports={{.Ports}}'
+```
+
 ## Customization
 
 The Fast Model version and package used for creating the Docker image and wrapper scripts
 is configured in the file `fvprc`. If one wants to use another model version or custom package
 one can just change the values stored in this file.
 
-Alternatively, on can set the model version for example as an environment variable overwriting
+Alternatively, one can set the model version for example as an environment variable overwriting
 the default given in `fvprc`. The following settings can be changed:
 
 - *FVP_VERSION*: The release version triple (major.minor.patch).
-- *FVP_BASE_URL*: The base download URL to get the model package from.
-- *FVP_ARCHIVE*: The name of the model package archive to fetch.
+- *FVP_BASE_URL*: The base download URL for the model package.
+- *FVP_ARCHIVE*: The architecture-specific model package archive.
+- *FVP_SHA256*: The published SHA-256 checksum for that archive.
 
-The download URL is composed as `${FVP_BASE_URL}/${FVP_VERSION}/${FVP_ARCHIVE}`.
 The created Docker image is labeled as `fvp:${FVP_VERSION}`. Hence, one can keep multiple versions
 in parallel and switch between them by just setting the environment variable to the required version.
 
 ```sh
-FVP_VERSION=11.22.39 FVP_MPS2_Cortex-M3 --version
+FVP_VERSION=11.32.23 FVP_MPS2_Cortex-M3 --version
 ```
 
 ## Repository structure
@@ -162,4 +277,3 @@ FVP_MOUNT_DIR=$(pwd) FVP_MPS2_Cortex-M3 --version
 # Mount project root but work in subdirectory
 FVP_MOUNT_DIR=/path/to/project FVP_WORKDIR=/path/to/project/build FVP_MPS2_Cortex-M3 --version
 ```
-
