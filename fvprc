@@ -1,8 +1,10 @@
-export FVP_VERSION=${FVP_VERSION:-"11.31.28"}
+export FVP_VERSION=${FVP_VERSION:-"11.32.23"}
 export FVP_BASE_URL=${FVP_BASE_URL:-"https://artifacts.tools.arm.com/avh"}
 
 if [[ "$(uname -m)" == "arm64" ]]; then
-    export FVP_ARCHIVE=${FVP_ARCHIVE:-"avh-linux-aarch64_11.31_28_Linux64_armv8l.tar.gz"}
+    export FVP_ARCHIVE=${FVP_ARCHIVE:-"mdk-fvp-11.32_23_linux_arm64.tar.gz"}
+    export FVP_SHA256=${FVP_SHA256:-"fcf1662d345a6f54076826a9d49097e6b844169b599e2b297706a2b1f71a9439"}
 else
-    export FVP_ARCHIVE=${FVP_ARCHIVE:-"avh-linux-x86_11.31_28_Linux64.tar.gz"}
+    export FVP_ARCHIVE=${FVP_ARCHIVE:-"mdk-fvp-11.32_23_linux_x86.tar.gz"}
+    export FVP_SHA256=${FVP_SHA256:-"bd08a543cc0e29757c4649a03699e6062514438fcdc91e85cb2307be9a51ea45"}
 fi
