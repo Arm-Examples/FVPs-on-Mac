@@ -132,40 +132,8 @@ CMSIS-Debugger     -> 127.0.0.1:<gdb-port>  -> Docker -> GDBServer.so -> FVP tar
 CMSIS UART client  -> 127.0.0.1:<uart-port> -> Docker -> telnetterminal<n>
 ```
 
-### GDBServer and UART arguments
-
-The FVP must still be told to load `GDBServer.so`. Set `FVP_MODEL`,
-`PLATFORM`, `GDB_PORT`, and `UART_PORT` for the selected model and launch it as
-follows:
-
-```sh
-"${FVP_MODEL}" \
-  --plugin /opt/avh-fvp/plugins/GDBServer.so \
-  -C "GDBServer.port=${GDB_PORT}" \
-  -C GDBServer.allow_remote=1 \
-  -C GDBServer.shutdown_on_disconnect=1 \
-  -C "${PLATFORM}.telnetterminal0.start_port=${UART_PORT}" \
-  -C "${PLATFORM}.telnetterminal0.mode=raw"
-```
-
-Pass every FVP configuration value as its own argument with a preceding `-C`.
-The wrapper detects the `GDBServer.port` and `telnetterminal<n>.start_port`
-value arguments and publishes those ports. If `-C` is omitted, the wrapper can
-still detect and publish the port, but the FVP can interpret the value as an
-application filename and terminate.
-
-The terminal namespace is model-specific. Set `PLATFORM` to the namespace used
-by the selected model, such as `mps3_board` or `mps4_board`. The wrapper
-intentionally accepts any prefix before `telnetterminal<n>.start_port`.
-
-Both added port mappings bind to `127.0.0.1`. GDB and UART are therefore
-available to applications on the Mac but are not exposed through other host
-network interfaces.
-
-### CMSIS-Debugger plugin path
-
 CMSIS-Debugger can start any generated FVP wrapper through a `gdbtarget`
-configuration and pass the plugin path through the macOS
+configuration and pass the plugin path of `GDBServer.so` through the macOS
 `AVH_FVP_PLUGINS` environment variable. The following generic launch.json pattern shows
 the relevant settings:
 
@@ -182,10 +150,6 @@ the relevant settings:
         "GDBServer.allow_remote=1",
         "-C",
         "GDBServer.shutdown_on_disconnect=1",
-        "-C",
-        "<platform>.telnetterminal0.start_port=<uart-port>",
-        "-C",
-        "<platform>.telnetterminal0.mode=raw",
         "-a",
         "<path-to-application-image>"
     ],
@@ -198,10 +162,7 @@ the relevant settings:
 }
 ```
 
-Use the same numeric value for `GDBServer.port`, `target.port`, and the host
-GDB connection. Likewise, use the same value for the FVP terminal
-`start_port` and `uart.socketPort`. Replace `<platform>` with the parameter
-namespace used by the selected model, such as `mps3_board` or `mps4_board`.
+Set the value for `gdb-port`, `path-to-application-image`, `uart-port`.
 
 VS Code expands `${env:AVH_FVP_PLUGINS}` in the macOS process before the
 Docker wrapper starts. The `ENV AVH_FVP_PLUGINS` instruction in the image does
@@ -214,6 +175,8 @@ export AVH_FVP_PLUGINS=/opt/avh-fvp/plugins
 
 Although `/opt/avh-fvp/plugins` is not a macOS directory, the expanded string
 is forwarded as an FVP argument and becomes valid inside the container.
+
+It is important to disable any Fast Models selection in vcpkg-configuration.json of your CMSIS Solution project. Otherwise, the environment setting for the `GDBServer.so` plugin will be overwritten.
 
 The example launch.json above uses a fixed 1000 ms server startup delay to avoid the GDB connection timeout issue and configures the integrated UART client for raw mode with CRLF line endings. 
 
@@ -228,6 +191,13 @@ During a live session, inspect the selected image and published ports with:
 
 ```sh
 docker ps --format 'container={{.Names}} image={{.Image}} ports={{.Ports}}'
+```
+
+### FVP UART redirect
+If you need to redirect e.g. `printf()` output via FVP UART interface, configure the UART port in a `FVP_Config.txt` to use the same `uart-port` value set in the launch.json file, e.g.
+```
+mps3_board.telnetterminal0.start_port=<uart-port>
+mps3_board.telnetterminal0.mode=raw
 ```
 
 ## Customization
