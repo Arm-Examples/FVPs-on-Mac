@@ -200,6 +200,52 @@ mps3_board.telnetterminal0.start_port=<uart-port>
 mps3_board.telnetterminal0.mode=raw
 ```
 
+> [!NOTE]
+> The wrapper decides which container ports to publish by scanning its own command line.
+> A `telnetterminal<n>.start_port` that is set **only** in the config file configures the
+> model correctly but leaves the port unpublished. Pass it on the command line as well
+> (`-C mps3_board.telnetterminal0.start_port=<uart-port>`) if a host UART client has to reach it.
+
+## Setup guide for coding agents
+
+[`skills/fvp-debug-setup/`](skills/fvp-debug-setup/) contains a task-focused
+setup guide for wiring the CMSIS Solution extension's **Load & Debug** and
+**Run** buttons to a model started through this wrapper. It documents the
+`GDBServer.so` parameters that matter, how the extension maps its buttons to
+launch configs and tasks, the `debugger:` node to add to the csolution file,
+the readiness handshake that otherwise makes GDB connect before the model is
+listening, and the argument forms this wrapper needs in order to publish the
+GDB and UART ports.
+
+It is plain Markdown with a small YAML header, written to be consumed by any
+coding agent — or read directly, as documentation.
+
+```txt
+    📂 skills/fvp-debug-setup
+    ┣ 📄 SKILL.md           The setup guide
+    ┗ 📄 verify-launch.py   Replays the debug adapter's launch path against a project's launch.json
+```
+
+To make it available to an agent, either point the agent at the file path, or
+install it where that agent looks for reusable instructions — for example:
+
+```sh
+# Agents that discover skill directories (e.g. Claude Code)
+ln -s "$(pwd)/skills/fvp-debug-setup" ~/.claude/skills/fvp-debug-setup
+
+# Agents that read a project instruction file (e.g. Codex, via AGENTS.md)
+echo "For FVP debug setup, follow $(pwd)/skills/fvp-debug-setup/SKILL.md" >> AGENTS.md
+```
+
+`verify-launch.py` is useful on its own. Run it from a csolution workspace
+folder to check that a debug session really comes up — it spawns the model
+exactly as the debug adapter would, waits the same way, attaches
+`arm-none-eabi-gdb`, and fails if a container is left behind:
+
+```sh
+python3 /path/to/FVPs-on-Mac/skills/fvp-debug-setup/verify-launch.py
+```
+
 ## Customization
 
 The Fast Model version and package used for creating the Docker image and wrapper scripts
@@ -228,6 +274,7 @@ The repository contains the following files:
 ```txt
     📦
     ┣ 📂 bin           Created/updated by build.sh script
+    ┣ 📂 skills        Setup guides for coding agents
     ┣ 📄 build.sh      The script to build a Docker image
     ┣ 📄 dockerfile    The recipe used to build the Docker image
     ┣ 📄 fvp.sh        The wrapper script to launch a model executable inside a Docker container
