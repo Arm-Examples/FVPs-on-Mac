@@ -81,39 +81,36 @@ runtime_dir="$(mktemp -d "${TMPDIR:-/tmp}/fvp-wrapper.XXXXXX")"
 cidfile="${runtime_dir}/container.cid"
 docker_pid=""
 
-# shellcheck disable=SC2329 
-# function used in a trap bellow
 cleanup() {
     local status="$1"
     local container_id=""
 
     # Prevent recursive traps while cleaning up.
-    trap - EXIT INT TERM HUP
+    trap - INT TERM HUP
 
-    if [[ -s "$cidfile" ]]; then
-        container_id="$(<"$cidfile")"
+    if [[ -s "${cidfile}" ]]; then
+        container_id="$(<"${cidfile}")"
 
         # Request graceful termination, then force removal if necessary.
-        docker stop --time 2 "$container_id" >/dev/null 2>&1 || true
-        docker rm -f "$container_id" >/dev/null 2>&1 || true
+        docker stop --time 2 "${container_id}" >/dev/null 2>&1 || true
+        docker rm -f "${container_id}" >/dev/null 2>&1 || true
     fi
 
     # Reap the local docker client process.
-    if [[ -n "$docker_pid" ]]; then
-        kill "$docker_pid" >/dev/null 2>&1 || true
-        wait "$docker_pid" 2>/dev/null || true
+    if [[ -n "${docker_pid}" ]]; then
+        kill "${docker_pid}" >/dev/null 2>&1 || true
+        wait "${docker_pid}" 2>/dev/null || true
     fi
 
-    rm -f "$cidfile"
-    rmdir "$runtime_dir" 2>/dev/null || true
+    rm -f "${cidfile}" 2>/dev/null || true
+    rmdir "${runtime_dir}" 2>/dev/null || true
 
     exit "$status"
 }
 
-trap 'cleanup $?' EXIT
-trap 'exit 130' INT
-trap 'exit 143' TERM
-trap 'exit 129' HUP
+trap 'cleanup 130' INT
+trap 'cleanup 143' TERM
+trap 'cleanup 129' HUP
 
 docker run --rm \
   --cidfile "$cidfile" \
@@ -126,5 +123,7 @@ docker run --rm \
   "fvp:${FVP_VERSION}" "${MODEL}" "${FLAGS[@]}" &
 
 docker_pid=$!
-wait "$docker_pid"
-exit $?
+wait "${docker_pid}"
+result=$?
+
+cleanup "${result}"
