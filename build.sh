@@ -4,7 +4,7 @@ EXITCODE=0
 
 source "$(dirname "$0")/fvprc"
 
-if ! which -s docker; then
+if ! command -v docker >/dev/null 2>&1; then
     echo "docker is missing on your system"
     EXITCODE=1
 fi
@@ -34,7 +34,7 @@ docker build -t "fvp:${FVP_VERSION}" \
     --build-arg FVP_BASE_URL="${FVP_BASE_URL}" \
     --build-arg FVP_ARCHIVE="${FVP_ARCHIVE}" \
     --build-arg FVP_SHA256="${FVP_SHA256}" \
-    --build-arg USERNAME="$(whoami)" \
+    --build-arg USER="$(whoami)" \
     --build-arg USERID="$(id -u)" \
     "$@" . || exit
 
