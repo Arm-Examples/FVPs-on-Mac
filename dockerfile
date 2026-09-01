@@ -21,6 +21,8 @@ ARG FVP_BASE_URL
 ARG FVP_ARCHIVE
 ARG FVP_SHA256
 
+SHELL ["/bin/bash", "-o", "pipefail", "-c"]
+
 # Download the official release archive and remove its leading `./` and
 # architecture directory while extracting it into the wrapper's stable path.
 RUN curl --fail --location --retry 3 \
@@ -43,16 +45,16 @@ RUN case "$(dpkg --print-architecture)" in \
     esac && \
     ln -s "${libstdcpp}" /opt/avh-fvp/libstdc++-preload.so
 
-ARG USERNAME=root
-ARG USERID=0
+ARG USER
+ARG USERID
 
-RUN test ${USERID} -ne 0 && \
-    groupadd -g ${USERID} ${USERNAME} && \
-    useradd -l -r -u ${USERID} -g ${USERNAME} ${USERNAME}
+RUN test "${USERID}" -ne 0 && \
+    groupadd -g "${USERID}" "${USER}" && \
+    useradd -l -r -u "${USERID}" -g "${USER}" "${USER}"
 
-USER ${USERNAME}
+USER "${USER}"
 
-ENV PATH=$PATH:/opt/avh-fvp/bin
+ENV PATH="${PATH}:/opt/avh-fvp/bin"
 ENV AVH_FVP_PLUGINS=/opt/avh-fvp/plugins
 ENV LD_PRELOAD=/opt/avh-fvp/libstdc++-preload.so
 
