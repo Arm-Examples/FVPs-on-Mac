@@ -46,4 +46,8 @@ while IFS= read -r -d '' model; do
     fi
 done < <(docker run --rm "fvp:${FVP_VERSION}" find /opt/avh-fvp/bin/ -name "FVP_*" -maxdepth 1 -type f -executable -follow -print0)
 
+if [ ! -L "bin/armlm" ]; then
+    ln -s ../armlm.sh "bin/armlm"
+fi
+
 exit 0
