@@ -4,7 +4,7 @@ EXITCODE=0
 
 source "$(dirname "$0")/fvprc"
 
-if ! which -s docker; then
+if ! command -v docker >/dev/null 2>&1; then
     echo "docker is missing on your system"
     EXITCODE=1
 fi

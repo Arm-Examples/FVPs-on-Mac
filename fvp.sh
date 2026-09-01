@@ -81,6 +81,8 @@ runtime_dir="$(mktemp -d "${TMPDIR:-/tmp}/fvp-wrapper.XXXXXX")"
 cidfile="${runtime_dir}/container.cid"
 docker_pid=""
 
+# shellcheck disable=SC2329 
+# function used in a trap bellow
 cleanup() {
     local status="$1"
     local container_id=""
