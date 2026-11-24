@@ -29,7 +29,7 @@ This will create the subdirectory `FVPs-on-Mac` in the current working directory
 ## Build the Docker wrapper
 
 This checkout is configured to download and build the official Fast Models
-11.32.23 release from `https://artifacts.tools.arm.com/avh/11.32.23/`.
+11.33.13 release from `https://artifacts.tools.arm.com/avh/11.33.13/`.
 The build selects the Linux Arm64 archive on Apple Silicon and the Linux x86
 archive on Intel hosts, then verifies the published SHA-256 checksum.
 
@@ -260,12 +260,11 @@ the default given in `fvprc`. The following settings can be changed:
 - *FVP_ARCHIVE*: The architecture-specific model package archive.
 - *FVP_SHA256*: The published SHA-256 checksum for that archive.
 
-The created Docker image is labeled as `fvp:${FVP_VERSION}`. Hence, one can keep multiple versions
-in parallel and switch between them by just setting the environment variable to the required version.
-
-```sh
-FVP_VERSION=11.32.23 FVP_MPS2_Cortex-M3 --version
-```
+The created Docker image is labeled as `fvp:${FVP_VERSION}`, so multiple versions can be
+kept in parallel. To build another release, set `FVP_VERSION`, `FVP_ARCHIVE`, and
+`FVP_SHA256` to values for the same release and host architecture. After building it,
+set `FVP_VERSION` to select that image. Changing only `FVP_VERSION` before building
+keeps the default archive and checksum for 11.33.13.
 
 ## Repository structure
 

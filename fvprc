@@ -1,10 +1,10 @@
-export FVP_VERSION=${FVP_VERSION:-"11.32.23"}
+export FVP_VERSION=${FVP_VERSION:-"11.33.13"}
 export FVP_BASE_URL=${FVP_BASE_URL:-"https://artifacts.tools.arm.com/avh"}
 
 if [[ "$(uname -m)" == "arm64" ]]; then
-    export FVP_ARCHIVE=${FVP_ARCHIVE:-"mdk-fvp-11.32_23_linux_arm64.tar.gz"}
-    export FVP_SHA256=${FVP_SHA256:-"fcf1662d345a6f54076826a9d49097e6b844169b599e2b297706a2b1f71a9439"}
+    export FVP_ARCHIVE=${FVP_ARCHIVE:-"mdk-fvp-11.33_13_linux_arm64.tar.gz"}
+    export FVP_SHA256=${FVP_SHA256:-"e3af04009a4d90f5988c511581d963b56fb2cf07291107568988356ce2a5735b"}
 else
-    export FVP_ARCHIVE=${FVP_ARCHIVE:-"mdk-fvp-11.32_23_linux_x86.tar.gz"}
-    export FVP_SHA256=${FVP_SHA256:-"bd08a543cc0e29757c4649a03699e6062514438fcdc91e85cb2307be9a51ea45"}
+    export FVP_ARCHIVE=${FVP_ARCHIVE:-"mdk-fvp-11.33_13_linux_x86.tar.gz"}
+    export FVP_SHA256=${FVP_SHA256:-"eb8cdf069834bb96d31b0d49c994bf0b5e9c1e9458a2a459b22fd364c2195b7a"}
 fi
