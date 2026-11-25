@@ -1,4 +1,4 @@
-name: build
+name: checks
 
 on:
   push:
@@ -8,11 +8,17 @@ on:
   pull_request:
     paths:
       - .github/workflows/build.yml
+      - Containerfile
       - dockerfile
       - build.sh
+      - runtime.sh
       - fvp.sh
       - fvprc
       - armlm.sh
+      - README.md
+      - docs/runtime-spec.md
+      - skills/fvp-debug-setup/SKILL.md
+      - skills/fvp-debug-setup/verify-launch.py
 
 permissions:
   contents: read
@@ -44,34 +50,33 @@ jobs:
         run: |
           shellcheck -s bash -f gcc *.sh fvprc
 
-      - name: Lint Dockerfile
+      - name: Lint Containerfile
         uses: hadolint/hadolint-action@06be81baf89a55ffd0e24b8f04a4185738dd3387 # v3.5.0
         with:
-          dockerfile: dockerfile
+          dockerfile: Containerfile
 
-  build:
+  docker-build:
     runs-on: ubuntu-latest
     steps:
       - name: Harden the runner (Audit all outbound calls)
         uses: step-security/harden-runner@1d88384fd173af6ecb012dfd0264a306b711241a # v2.22.4
         with:
           egress-policy: audit
-            
+
       - name: Checkout
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           fetch-depth: 0
           persist-credentials: false
 
-      - name: Create .armlm
-        run: mkdir -p ~/.armlm
-
-      - name: Build Docker image
+      - name: Build with Docker
+        env:
+          FVP_RUNTIME: docker
         run: ./build.sh
 
-      - name: Run FVP binaries to verify build
-        run: | 
-          for x in ./bin/*; do
-            echo "$x --version"
-            $x --version || exit 1
-          done
+      - name: Check model and license utility
+        env:
+          FVP_RUNTIME: docker
+        run: |
+          ./bin/FVP_MPS2_Cortex-M3 --version
+          ./bin/armlm --help

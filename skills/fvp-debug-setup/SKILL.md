@@ -1,13 +1,13 @@
 ---
 name: fvp-debug-setup
-description: Wire the CMSIS Solution extension's Run/Debug buttons to an Arm FVP running in the FVPs-on-Mac Docker wrapper, using the model's built-in GDBServer plugin (Fast Models 11.32.23+). Covers the csolution `debugger: name: Arm-FVP` node, the AVH_FVP_PLUGINS handover into the container, the launch-config readiness handshake that otherwise makes GDB connect before the model is listening, and UART port publishing. Use when someone wants to debug firmware on a Corstone FVP from VS Code on macOS, migrate off fvp-gdb/Iris, or map the CMSIS view buttons to an FVP in a csolution project.
+description: Wire the CMSIS Solution extension's Run/Debug buttons to an Arm FVP running in the FVPs-on-Mac Docker or Apple Container wrapper, using the model's built-in GDBServer plugin (Fast Models 11.32.23+). Covers the csolution `debugger: name: Arm-FVP` node, the AVH_FVP_PLUGINS handover into the container, the launch-config readiness handshake that otherwise makes GDB connect before the model is listening, and UART port publishing. Use when someone wants to debug firmware on a Corstone FVP from VS Code on macOS, migrate off fvp-gdb/Iris, or map the CMSIS view buttons to an FVP in a csolution project.
 ---
 
 # FVP debugging via the model's own GDBServer plugin
 
 Goal: make the CMSIS Solution view's **Load & Debug** and **Run** buttons work
 end-to-end against an FVP, with no external GDB bridge, on a macOS host where
-the model runs inside the FVPs-on-Mac Docker wrapper.
+the model runs inside the FVPs-on-Mac Docker or Apple Container wrapper.
 
 Since **Fast Models 11.32.23** the release ships `plugins/GDBServer.so`
 (`.dll` on Windows), so the model *is* the GDB server. `fvp-gdb`, Iris and the
@@ -29,8 +29,11 @@ symlinks, and `bin/` is on `PATH`. Check with:
 FVP_Corstone_SSE-320 --version
 ```
 
-**Docker is running** (`docker info`), because Arm publishes no macOS build of
-the model — the wrapper is not a convenience, it is the only way to run it here.
+**The selected runtime is running.** `./build.sh` detects Docker and Apple
+Container, asks for a choice when both are installed, and saves it for later VS
+Code launches. Docker works on Intel and Apple silicon Macs; Apple Container
+requires Apple silicon and macOS 26 or later. Arm publishes no macOS build of
+the model.
 
 **GDB.** `arm-none-eabi-gdb` must resolve on the host. It runs natively on
 macOS; only the model lives in the container.
@@ -73,7 +76,7 @@ parameters:
 | Parameter | Default | Note |
 |---|---|---|
 | `GDBServer.port` | `10000` | the extension passes 3333 |
-| `GDBServer.allow_remote` | `0` | **required behind Docker port forwarding** |
+| `GDBServer.allow_remote` | `0` | **required behind Container port forwarding** |
 | `GDBServer.core_name` | `''` | empty = plugin picks a core |
 | `GDBServer.list_cores` | `0` | |
 | `GDBServer.shutdown_on_disconnect` | `0` | |
@@ -183,11 +186,12 @@ GDBServer: Listening address="0.0.0.0" port=3333    ← too late
 Info: <model>: Stopping simulation...
 ```
 
-**With this wrapper, fix it with a fixed delay:**
+**With this wrapper, start with a fixed delay of five seconds and adjust it to
+the selected runtime's startup time:**
 
 ```jsonc
 "port": "3333",
-"serverStartupDelay": 1000
+"serverStartupDelay": 5000
 ```
 
 The event-driven alternative — blanking `port` so the adapter takes the
@@ -239,14 +243,14 @@ unaffected.
         "-a", "out/.../image.elf"
     ],
     "port": "3333",
-    "serverStartupDelay": 1000,
+    "serverStartupDelay": 5000,
     "uart": { "socketPort": "5000", "eolCharacter": "CRLF" }
 }
 ```
 
 Each line that is not in Arm's template earns its place:
 
-- **`GDBServer.allow_remote=1` is mandatory here.** Through Docker's port
+- **`GDBServer.allow_remote=1` is mandatory here.** Through the runtime's port
   forwarder the debugger is not a localhost client, and the plugin resets the
   connection without it. The wrapper does not inject it — it has to be in the
   config.
@@ -296,7 +300,7 @@ It exits non-zero unless the breakpoint hit and no `fvp:*` container was left
 behind. Success looks like:
 
 ```
-readiness: fixed serverStartupDelay 1.0s (target.port=3333)
+readiness: fixed serverStartupDelay 5.0s (target.port=3333)
 Temporary breakpoint 1, main () at board/.../main.c:31
 [Inferior 1 (Remote target) detached]
 containers left after teardown: none
@@ -315,8 +319,7 @@ the ~100MB model archive.
   leaves the core halted and the plugin has no resume command (§2).
 - Only one model can hold the GDB port at a time; a stale `fvp-gdb` or an older
   container will block it. `lsof -nP -iTCP:3333 -sTCP:LISTEN` finds the culprit
-  on the host, and `docker ps --format 'container={{.Names}} image={{.Image}} ports={{.Ports}}'`
-  shows which container holds it.
+  on the host; `container list` or `docker ps` shows active instances.
 - The launch config is `manual`: after changing target-type or build-type, its
   `program` and `serverParameters` paths need re-syncing (§5).
 - Linux and Windows: point `model:` straight at the real model executable
