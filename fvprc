@@ -1,7 +1,8 @@
 export FVP_VERSION=${FVP_VERSION:-"11.32.23"}
 export FVP_BASE_URL=${FVP_BASE_URL:-"https://artifacts.tools.arm.com/avh"}
+export FVP_CONTAINER_DNS=${FVP_CONTAINER_DNS-"1.1.1.1"}
 
-if [[ "$(uname -m)" == "arm64" ]]; then
+if [[ "$(uname -m)" == arm64 ]]; then
     export FVP_ARCHIVE=${FVP_ARCHIVE:-"mdk-fvp-11.32_23_linux_arm64.tar.gz"}
     export FVP_SHA256=${FVP_SHA256:-"fcf1662d345a6f54076826a9d49097e6b844169b599e2b297706a2b1f71a9439"}
 else

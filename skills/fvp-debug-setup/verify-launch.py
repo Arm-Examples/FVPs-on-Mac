@@ -20,10 +20,12 @@ import argparse
 import json
 import os
 import re
+import shutil
 import subprocess
 import sys
 import threading
 import time
+from pathlib import Path
 
 ap = argparse.ArgumentParser()
 ap.add_argument("--launch-json", default=".vscode/launch.json")
@@ -58,7 +60,7 @@ params = [expand(str(p)) for p in target.get("serverParameters", [])]
 print("spawn:", server, " ".join(params))
 
 if "GDBServer.allow_remote=1" not in params and sys.platform == "darwin":
-    print("!! GDBServer.allow_remote=1 is not in serverParameters -- through Docker's")
+    print("!! GDBServer.allow_remote=1 is not in serverParameters -- through the runtime's")
     print("   port forwarder the plugin will reset GDB's connection (SKILL.md section 6)")
 
 proc = subprocess.Popen(
@@ -136,9 +138,27 @@ try:
 except subprocess.TimeoutExpired:
     proc.kill()
 
-ps = subprocess.run(["docker", "ps", "--format", "{{.Names}} {{.Image}}"],
-                    capture_output=True, text=True).stdout.splitlines()
-left = [l.split()[0] for l in ps if len(l.split()) > 1 and l.split()[1].startswith("fvp:")]
+runtime = os.environ.get("FVP_RUNTIME")
+if not runtime:
+    choice_file = Path(__file__).resolve().parents[2] / ".fvp-runtime"
+    if choice_file.exists():
+        runtime = choice_file.read_text().strip()
+    else:
+        available = [name for name in ("docker", "container") if shutil.which(name)]
+        if len(available) == 1:
+            runtime = available[0]
+if runtime == "docker":
+    ps_cmd = ["docker", "ps", "--format", "{{.Names}} {{.Image}}"]
+elif runtime == "container":
+    ps_cmd = ["container", "list"]
+else:
+    sys.exit("set FVP_RUNTIME or run ./build.sh to select Docker or Apple Container")
+ps = subprocess.run(ps_cmd, capture_output=True, text=True, check=True).stdout.splitlines()
+left = []
+for line in ps:
+    parts = line.split()
+    if len(parts) > 1 and (parts[1].startswith("fvp:") or "/fvp:" in parts[1]):
+        left.append(parts[0])
 print("containers left after teardown:", ", ".join(left) or "none")
 
 hit = "Temporary breakpoint" in gdb_out or re.search(r"^#0\s", gdb_out, re.M)
